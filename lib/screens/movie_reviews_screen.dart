@@ -39,6 +39,17 @@ class _MovieReviewsScreenState extends State<MovieReviewsScreen> {
     }
   }
 
+  void _updateReview(String username, String id, String title, int rating, String comment, int like) async {
+    final success = await _apiService.updateReview(username, id, title, rating, comment, like);
+    if (success) {
+      _loadReviews();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gagal menambahkan like')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -90,6 +101,17 @@ class _MovieReviewsScreenState extends State<MovieReviewsScreen> {
                       IconButton(
                         icon: Icon(Icons.delete),
                         onPressed: () => _deleteReview(review['_id']),
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.thumb_up),
+                        onPressed: () {
+                          final currentLikes = (review['like'] ?? 0) as int;
+                          _updateReview(review['username'], review['_id'], review['title'], review['rating'], review['comment'], currentLikes + 1);
+                        },
+                      ),
+                      Text(
+                        (review['like'] ?? '0').toString(), 
+                        style: TextStyle(fontSize: 12),
                       ),
                     ],
                   ),
