@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  static const String baseUrl = 'https://crudcrud.com/api/01470ae0e89a49458a03ed83e62bc127';
+  static const String baseUrl = 'https://crudcrud.com/api/1aa5ffcf2cdb4eed9375f19f13e53baa';
 
   Future<bool> registerUser(String username, String password) async {
     print("API registerUser: $username, $password");
@@ -59,12 +59,12 @@ class ApiService {
     }
   }
 
-  Future<bool>  addReview(String username, String title, int rating, String comment) async {
+  Future<bool>  addReview(String username, String title, int rating, String comment, String image) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/reviews'),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'username': username, 'title': title, 'rating': rating, 'comment': comment}),
+        body: jsonEncode({'username': username, 'title': title, 'rating': rating, 'comment': comment, 'image': image}),
       );
       return response.statusCode == 201;
     } catch (e) {
@@ -73,12 +73,12 @@ class ApiService {
     }
   }
 
-  Future<bool> updateReview(String username, String id, String title, int rating, String comment) async {
+  Future<bool> updateReview(String username, String id, String title, int rating, String comment, int like, String image) async {
     try {
       final response = await http.put(
         Uri.parse('$baseUrl/reviews/$id'),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'username': username,'title': title, 'rating': rating, 'comment': comment}),
+        body: jsonEncode({'username': username,'title': title, 'rating': rating, 'comment': comment, 'like': like, 'image': image}),
       );
       print('Response status: ${response.statusCode}');
       print('Response body: ${response.body}');
@@ -89,7 +89,7 @@ class ApiService {
     }
   }
 
- Future<bool> deleteReview(String id) async {
+  Future<bool> deleteReview(String id) async {
     try {
       final response = await http.delete(Uri.parse('$baseUrl/reviews/$id'));
       return response.statusCode == 200;

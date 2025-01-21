@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import '../api_service.dart';
 import 'add_edit_review_screen.dart';
@@ -39,6 +41,17 @@ class _MovieReviewsScreenState extends State<MovieReviewsScreen> {
     }
   }
 
+  void _updateReview(String username, String id, String title, int rating, String comment, int like, String image) async {
+    final success = await _apiService.updateReview(username, id, title, rating, comment, like, image);
+    if (success) {
+      _loadReviews();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gagal menambahkan like')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -65,7 +78,23 @@ class _MovieReviewsScreenState extends State<MovieReviewsScreen> {
               itemCount: _reviews.length,
               itemBuilder: (context, index) {
                 final review = _reviews[index];
+
+                // Decode Base64 image
+                final String? imageBase64 = review['image'];
+                final Uint8List? imageBytes = 
+                    (imageBase64 != null && imageBase64.isNotEmpty) 
+                        ? base64Decode(imageBase64) 
+                        : null;
+
                 return ListTile(
+                  leading: imageBytes != null
+                      ? Image.memory(
+                          imageBytes,
+                          width: 50,
+                          height: 50,
+                          fit: BoxFit.cover,
+                        )
+                      : Icon(Icons.image_not_supported, size: 50), // Default icon if no image
                   title: Text(review['title']),
                   subtitle: Text('${review['rating']} / 10\n${review['comment']}'),
                   isThreeLine: true,
@@ -90,6 +119,17 @@ class _MovieReviewsScreenState extends State<MovieReviewsScreen> {
                       IconButton(
                         icon: Icon(Icons.delete),
                         onPressed: () => _deleteReview(review['_id']),
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.thumb_up),
+                        onPressed: () {
+                          final currentLikes = (review['like'] ?? 0) as int;
+                          _updateReview(review['username'], review['_id'], review['title'], review['rating'], review['comment'], currentLikes + 1, review['image']);
+                        },
+                      ),
+                      Text(
+                        (review['like'] ?? '0').toString(), 
+                        style: TextStyle(fontSize: 12),
                       ),
                     ],
                   ),
